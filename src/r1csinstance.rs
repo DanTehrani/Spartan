@@ -12,7 +12,7 @@ use super::sparse_mlpoly::{
 use super::timer::Timer;
 use flate2::{write::ZlibEncoder, Compression};
 use merlin::Transcript;
-use rand::rngs::OsRng;
+use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

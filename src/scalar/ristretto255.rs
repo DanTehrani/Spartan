@@ -10,7 +10,7 @@ use core::convert::TryFrom;
 use core::fmt;
 use core::iter::{Product, Sum};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use rand_core::{CryptoRng, RngCore};
+use rand_core::RngCore;
 use serde::{Deserialize, Serialize};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
@@ -378,7 +378,7 @@ impl Scalar {
     R
   }
 
-  pub fn random<Rng: RngCore + CryptoRng>(rng: &mut Rng) -> Self {
+  pub fn random<Rng: RngCore>(rng: &mut Rng) -> Self {
     let mut limbs = [0u64; 8];
     for i in 0..8 {
       limbs[i] = rng.next_u64();
