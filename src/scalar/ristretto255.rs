@@ -11,6 +11,7 @@ use core::fmt;
 use core::iter::{Product, Sum};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use rand_core::RngCore;
+use serde::de::Visitor;
 use serde::{Deserialize, Serialize};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
@@ -196,8 +197,60 @@ macro_rules! impl_binops_multiplicative {
 // The internal representation of this type is four 64-bit unsigned
 // integers in little-endian order. `Scalar` values are always in
 // Montgomery form; i.e., Scalar(a) = aR mod q, with R = 2^256.
-#[derive(Clone, Copy, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Eq)]
 pub struct Scalar(pub(crate) [u64; 4]);
+
+use serde::ser::SerializeSeq;
+use serde::{Deserializer, Serializer};
+
+impl Serialize for Scalar {
+  fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    let values: Vec<String> = self.0.iter().map(|v| v.to_string()).collect();
+    let mut seq = serializer.serialize_seq(Some(values.len()))?;
+    for val in values.iter() {
+      seq.serialize_element(val)?;
+    }
+
+    seq.end()
+  }
+}
+
+struct U64ArrayVisitor;
+
+impl<'de> Visitor<'de> for U64ArrayVisitor {
+  type Value = Scalar;
+
+  fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    formatter.write_str("a sequence of 4 u64 values")
+  }
+
+  fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+  where
+    A: serde::de::SeqAccess<'de>,
+  {
+    let mut result = [0u64; 4];
+
+    for i in 0..4 {
+      result[i] = seq
+        .next_element::<String>()
+        .unwrap()
+        .unwrap()
+        .parse()
+        .unwrap()
+    }
+
+    Ok(Scalar::from_raw(result))
+  }
+}
+
+impl<'de> Deserialize<'de> for Scalar {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+  where
+    D: Deserializer<'de>,
+  {
+    deserializer.deserialize_seq(U64ArrayVisitor)
+  }
+}
 
 impl fmt::Debug for Scalar {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
