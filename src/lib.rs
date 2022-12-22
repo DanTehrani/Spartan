@@ -114,7 +114,8 @@ pub type InputsAssignment = Assignment;
 /// `Instance` holds the description of R1CS matrices and a hash of the matrices
 #[derive(Serialize, Deserialize)]
 pub struct Instance {
-  inst: R1CSInstance,
+  /// R1CS instance
+  pub inst: R1CSInstance,
   digest: Vec<u8>,
 }
 
