@@ -109,7 +109,7 @@ Finally, we provide an example that specifies a custom R1CS instance instead of 
 # use curve25519_dalek::scalar::Scalar;
 # use libspartan::{InputsAssignment, Instance, SNARKGens, VarsAssignment, SNARK};
 # use merlin::Transcript;
-# use rand::rngs::OsRng;
+# use rand_core::OsRng;
 # fn main() {
   // produce a tiny instance
   let (

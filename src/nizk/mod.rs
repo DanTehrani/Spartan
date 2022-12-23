@@ -568,7 +568,7 @@ impl DotProductProofLog {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use rand::rngs::OsRng;
+  use rand_core::OsRng;
   #[test]
   fn check_knowledgeproof() {
     let mut csprng: OsRng = OsRng;

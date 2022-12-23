@@ -1609,8 +1609,7 @@ impl SparsePolynomial {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use rand::rngs::OsRng;
-  use rand::RngCore;
+  use rand_core::{RngCore, OsRng};
   #[test]
   fn check_sparse_polyeval_proof() {
     let mut csprng: OsRng = OsRng;
