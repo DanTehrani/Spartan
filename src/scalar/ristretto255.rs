@@ -205,7 +205,7 @@ use serde::{Deserializer, Serializer};
 
 impl Serialize for Scalar {
   fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-    let values: Vec<String> = self.0.iter().map(|v| v.to_string()).collect();
+    let values: Vec<u8> = self.0.iter().map(|v| v.to_le_bytes()).flatten().collect();
     let mut seq = serializer.serialize_seq(Some(values.len()))?;
     for val in values.iter() {
       seq.serialize_element(val)?;
@@ -231,12 +231,11 @@ impl<'de> Visitor<'de> for U64ArrayVisitor {
     let mut result = [0u64; 4];
 
     for i in 0..4 {
-      result[i] = seq
-        .next_element::<String>()
-        .unwrap()
-        .unwrap()
-        .parse()
-        .unwrap()
+      let mut val: u64 = 0;
+      for j in 0..8 {
+        val += (seq.next_element::<u8>().unwrap().unwrap() as u64) * 256u64.pow(j)
+      }
+      result[i] = val;
     }
 
     Ok(Scalar::from_raw(result))
