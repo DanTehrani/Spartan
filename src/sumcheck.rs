@@ -9,6 +9,7 @@ use super::random::RandomTape;
 use super::scalar::Scalar;
 use super::transcript::{AppendToTranscript, ProofTranscript};
 use super::unipoly::{CompressedUniPoly, UniPoly};
+use crate::group::DecompressEncodedPoint;
 use core::iter;
 use itertools::izip;
 use merlin::Transcript;

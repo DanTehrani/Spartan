@@ -6,6 +6,7 @@ use super::math::Math;
 use super::random::RandomTape;
 use super::scalar::Scalar;
 use super::transcript::{AppendToTranscript, ProofTranscript};
+use crate::group::DecompressEncodedPoint;
 use merlin::Transcript;
 use serde::{Deserialize, Serialize};
 

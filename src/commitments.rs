@@ -1,6 +1,8 @@
-use super::group::{GroupElement, VartimeMultiscalarMul, GROUP_BASEPOINT_COMPRESSED};
+use super::group::{GroupElement, VartimeMultiscalarMul};
 use super::scalar::Scalar;
 use digest::{ExtendableOutput, Input};
+use k256::elliptic_curve::group::prime::PrimeCurveAffine;
+use k256::{AffinePoint, EncodedPoint};
 use sha3::Shake256;
 use std::io::Read;
 
@@ -15,14 +17,18 @@ impl MultiCommitGens {
   pub fn new(n: usize, label: &[u8]) -> Self {
     let mut shake = Shake256::default();
     shake.input(label);
-    shake.input(GROUP_BASEPOINT_COMPRESSED.as_bytes());
+    shake.input(AffinePoint::generator().compress().as_bytes());
 
     let mut reader = shake.xof_result();
     let mut gens: Vec<GroupElement> = Vec::new();
-    let mut uniform_bytes = [0u8; 64];
+    let mut uniform_bytes = [0u8; 32];
     for _ in 0..n + 1 {
       reader.read_exact(&mut uniform_bytes).unwrap();
-      gens.push(GroupElement::from_uniform_bytes(&uniform_bytes));
+
+      // TODO: Need to have uniform distribution?
+      let point = AffinePoint::generator();
+      let scalar = Scalar::from_bytes(&uniform_bytes).unwrap();
+      gens.push(point * scalar);
     }
 
     MultiCommitGens {

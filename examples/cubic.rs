@@ -9,7 +9,8 @@
 //!
 //! [here]: https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649
 #![allow(clippy::assertions_on_result_states)]
-use curve25519_dalek::scalar::Scalar;
+use k256::elliptic_curve::Field;
+use k256::Scalar;
 use libspartan::{InputsAssignment, Instance, SNARKGens, VarsAssignment, SNARK};
 use merlin::Transcript;
 use rand_core::OsRng;
@@ -36,7 +37,7 @@ fn produce_r1cs() -> (
   let mut B: Vec<(usize, usize, [u8; 32])> = Vec::new();
   let mut C: Vec<(usize, usize, [u8; 32])> = Vec::new();
 
-  let one = Scalar::one().to_bytes();
+  let one: [u8; 32] = Scalar::ONE.to_bytes().into();
 
   // R1CS is a set of three sparse matrices A B C, where is a row for every
   // constraint and a column for every entry in z = (vars, 1, inputs)
@@ -65,7 +66,7 @@ fn produce_r1cs() -> (
   // constraint 3 entries in (A,B,C)
   // constraint 3 is (Z3 + 5) * 1 - I0 = 0.
   A.push((3, 3, one));
-  A.push((3, num_vars, Scalar::from(5u32).to_bytes()));
+  A.push((3, num_vars, Scalar::from(5u32).to_bytes().into()));
   B.push((3, num_vars, one));
   C.push((3, num_vars + 1, one));
 
@@ -80,16 +81,16 @@ fn produce_r1cs() -> (
   let i0 = z3 + Scalar::from(5u32); // constraint 3
 
   // create a VarsAssignment
-  let mut vars = vec![Scalar::zero().to_bytes(); num_vars];
-  vars[0] = z0.to_bytes();
-  vars[1] = z1.to_bytes();
-  vars[2] = z2.to_bytes();
-  vars[3] = z3.to_bytes();
+  let mut vars: Vec<[u8; 32]> = vec![Scalar::ZERO.to_bytes().into(); num_vars];
+  vars[0] = z0.to_bytes().into();
+  vars[1] = z1.to_bytes().into();
+  vars[2] = z2.to_bytes().into();
+  vars[3] = z3.to_bytes().into();
   let assignment_vars = VarsAssignment::new(&vars).unwrap();
 
   // create an InputsAssignment
-  let mut inputs = vec![Scalar::zero().to_bytes(); num_inputs];
-  inputs[0] = i0.to_bytes();
+  let mut inputs: Vec<[u8; 32]> = vec![Scalar::ZERO.to_bytes().into(); num_inputs];
+  inputs[0] = i0.to_bytes().into();
   let assignment_inputs = InputsAssignment::new(&inputs).unwrap();
 
   // check if the instance we created is satisfiable

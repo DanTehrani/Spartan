@@ -8,6 +8,7 @@ use super::super::group::{CompressedGroup, GroupElement, VartimeMultiscalarMul};
 use super::super::math::Math;
 use super::super::scalar::Scalar;
 use super::super::transcript::ProofTranscript;
+use crate::group::DecompressEncodedPoint;
 use core::iter;
 use merlin::Transcript;
 use serde::{Deserialize, Serialize};

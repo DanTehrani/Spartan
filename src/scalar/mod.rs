@@ -1,7 +1,10 @@
+use k256::elliptic_curve::{ops::Reduce, PrimeField};
+use k256::U256;
+
 mod ristretto255;
 
 pub type Scalar = ristretto255::Scalar;
-pub type ScalarBytes = curve25519_dalek::scalar::Scalar;
+pub type ScalarBytes = k256::Scalar;
 
 pub trait ScalarFromPrimitives {
   fn to_scalar(self) -> Scalar;
@@ -32,7 +35,7 @@ pub trait ScalarBytesFromScalar {
 
 impl ScalarBytesFromScalar for Scalar {
   fn decompress_scalar(s: &Scalar) -> ScalarBytes {
-    ScalarBytes::from_bytes_mod_order(s.to_bytes())
+    ScalarBytes::from_uint_reduced(U256::from_le_slice(&s.to_bytes()))
   }
 
   fn decompress_vector(s: &[Scalar]) -> Vec<ScalarBytes> {

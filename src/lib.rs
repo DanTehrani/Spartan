@@ -5,7 +5,6 @@
 
 extern crate byteorder;
 extern crate core;
-extern crate curve25519_dalek;
 extern crate digest;
 extern crate merlin;
 extern crate rand;
@@ -657,10 +656,7 @@ mod tests {
       0,
     ];
 
-    let larger_than_mod = [
-      3, 0, 0, 0, 255, 255, 255, 255, 254, 91, 254, 255, 2, 164, 189, 83, 5, 216, 161, 9, 8, 216,
-      57, 51, 72, 125, 157, 41, 83, 167, 237, 115,
-    ];
+    let larger_than_mod = [255; 32];
 
     let A = vec![(0, 0, zero)];
     let B = vec![(1, 1, larger_than_mod)];

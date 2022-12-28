@@ -10,7 +10,7 @@ use core::convert::TryFrom;
 use core::fmt;
 use core::iter::{Product, Sum};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use rand_core::{RngCore, CryptoRng};
+use rand_core::{CryptoRng, RngCore};
 use serde::de::Visitor;
 use serde::{Deserialize, Serialize};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -296,13 +296,12 @@ impl ConditionallySelectable for Scalar {
 }
 
 /// Constant representing the modulus
-/// q = 2^252 + 27742317777372353535851937790883648493
-/// 0x1000000000000000 0000000000000000 14def9dea2f79cd6 5812631a5cf5d3ed
+/// 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
 const MODULUS: Scalar = Scalar([
-  0x5812_631a_5cf5_d3ed,
-  0x14de_f9de_a2f7_9cd6,
-  0x0000_0000_0000_0000,
-  0x1000_0000_0000_0000,
+  0xffff_fffe_ffff_fc2f,
+  0xffff_ffff_ffff_ffff,
+  0xffff_ffff_ffff_ffff,
+  0xffff_ffff_ffff_ffff,
 ]);
 
 impl<'a> Neg for &'a Scalar {
@@ -354,31 +353,16 @@ impl_binops_additive!(Scalar, Scalar);
 impl_binops_multiplicative!(Scalar, Scalar);
 
 /// INV = -(q^{-1} mod 2^64) mod 2^64
-const INV: u64 = 0xd2b5_1da3_1254_7e1b;
+const INV: u64 = 0xD838091DD2253531;
 
 /// R = 2^256 mod q
-const R: Scalar = Scalar([
-  0xd6ec_3174_8d98_951d,
-  0xc6ef_5bf4_737d_cf70,
-  0xffff_ffff_ffff_fffe,
-  0x0fff_ffff_ffff_ffff,
-]);
+const R: Scalar = Scalar([0x1000003D1, 0x0, 0x0, 0x0]);
 
 /// R^2 = 2^512 mod q
-const R2: Scalar = Scalar([
-  0xa406_11e3_449c_0f01,
-  0xd00e_1ba7_6885_9347,
-  0xceec_73d2_17f5_be65,
-  0x0399_411b_7c30_9a3d,
-]);
+const R2: Scalar = Scalar([0x7A2000E90A1, 1, 0x0, 0x0]);
 
 /// R^3 = 2^768 mod q
-const R3: Scalar = Scalar([
-  0x2a9e_4968_7b83_a2db,
-  0x2783_24e6_aef7_f3ec,
-  0x8065_dc6c_04ec_5b65,
-  0x0e53_0b77_3599_cec7,
-]);
+const R3: Scalar = Scalar([0x002BB1E33795F671, 0x100000B73, 0x0, 0x0]);
 
 impl Default for Scalar {
   #[inline]
@@ -1077,10 +1061,10 @@ mod tests {
   }
 
   const LARGEST: Scalar = Scalar([
-    0x5812631a5cf5d3ec,
-    0x14def9dea2f79cd6,
-    0x0000000000000000,
-    0x1000000000000000,
+    0xffff_fffe_ffff_fc2e,
+    0xffff_ffff_ffff_ffff,
+    0xffff_ffff_ffff_ffff,
+    0xffff_ffff_ffff_ffff,
   ]);
 
   #[test]
@@ -1091,10 +1075,10 @@ mod tests {
     assert_eq!(
       tmp,
       Scalar([
-        0x5812631a5cf5d3eb,
-        0x14def9dea2f79cd6,
-        0x0000000000000000,
-        0x1000000000000000,
+        0xffff_fffe_ffff_fc2d,
+        0xffff_ffff_ffff_ffff,
+        0xffff_ffff_ffff_ffff,
+        0xffff_ffff_ffff_ffff,
       ])
     );
 
@@ -1211,10 +1195,10 @@ mod tests {
   #[test]
   fn test_invert_is_pow() {
     let q_minus_2 = [
-      0x5812631a5cf5d3eb,
-      0x14def9dea2f79cd6,
-      0x0000000000000000,
-      0x1000000000000000,
+      0xffff_fffe_ffff_fc2d,
+      0xffff_ffff_ffff_ffff,
+      0xffff_ffff_ffff_ffff,
+      0xffff_ffff_ffff_ffff,
     ];
 
     let mut r1 = R;

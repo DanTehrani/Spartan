@@ -1,10 +1,14 @@
+use k256::elliptic_curve::group::prime::PrimeCurveAffine;
+use k256::elliptic_curve::sec1::FromEncodedPoint;
+use k256::{AffinePoint, ProjectivePoint};
+
 use super::errors::ProofVerifyError;
 use super::scalar::{Scalar, ScalarBytes, ScalarBytesFromScalar};
 use core::borrow::Borrow;
 use core::ops::{Mul, MulAssign};
 
-pub type GroupElement = curve25519_dalek::ristretto::RistrettoPoint;
-pub type CompressedGroup = curve25519_dalek::ristretto::CompressedRistretto;
+pub type GroupElement = k256::AffinePoint;
+pub type CompressedGroup = k256::EncodedPoint;
 
 pub trait CompressedGroupExt {
   type Group;
@@ -12,20 +16,32 @@ pub trait CompressedGroupExt {
 }
 
 impl CompressedGroupExt for CompressedGroup {
-  type Group = curve25519_dalek::ristretto::RistrettoPoint;
+  type Group = k256::AffinePoint;
   fn unpack(&self) -> Result<Self::Group, ProofVerifyError> {
-    self
-      .decompress()
-      .ok_or_else(|| ProofVerifyError::DecompressionError(self.to_bytes()))
+    let result = AffinePoint::from_encoded_point(self);
+    if result.is_some().into() {
+      return Ok(result.unwrap());
+    } else {
+      Err(ProofVerifyError::DecompressionError(
+        (*self.to_bytes()).try_into().unwrap(),
+      ))
+    }
   }
 }
 
-pub const GROUP_BASEPOINT_COMPRESSED: CompressedGroup =
-  curve25519_dalek::constants::RISTRETTO_BASEPOINT_COMPRESSED;
+pub trait DecompressEncodedPoint {
+  fn decompress(&self) -> Option<GroupElement>;
+}
+
+impl DecompressEncodedPoint for CompressedGroup {
+  fn decompress(&self) -> Option<GroupElement> {
+    Some(self.unpack().unwrap())
+  }
+}
 
 impl<'b> MulAssign<&'b Scalar> for GroupElement {
   fn mul_assign(&mut self, scalar: &'b Scalar) {
-    let result = (self as &GroupElement) * Scalar::decompress_scalar(scalar);
+    let result = (*(self as &GroupElement) * Scalar::decompress_scalar(scalar)).to_affine();
     *self = result;
   }
 }
@@ -33,7 +49,7 @@ impl<'b> MulAssign<&'b Scalar> for GroupElement {
 impl<'a, 'b> Mul<&'b Scalar> for &'a GroupElement {
   type Output = GroupElement;
   fn mul(self, scalar: &'b Scalar) -> GroupElement {
-    self * Scalar::decompress_scalar(scalar)
+    (*self * Scalar::decompress_scalar(scalar)).to_affine()
   }
 }
 
@@ -41,7 +57,7 @@ impl<'a, 'b> Mul<&'b GroupElement> for &'a Scalar {
   type Output = GroupElement;
 
   fn mul(self, point: &'b GroupElement) -> GroupElement {
-    Scalar::decompress_scalar(self) * point
+    (*point * Scalar::decompress_scalar(self)).into()
   }
 }
 
@@ -91,7 +107,7 @@ pub trait VartimeMultiscalarMul {
     I: IntoIterator,
     I::Item: Borrow<Self::Scalar>,
     J: IntoIterator,
-    J::Item: Borrow<Self>,
+    J::Item: Borrow<Self> + Mul<ScalarBytes, Output = ProjectivePoint>,
     Self: Clone;
 }
 
@@ -102,16 +118,34 @@ impl VartimeMultiscalarMul for GroupElement {
     I: IntoIterator,
     I::Item: Borrow<Self::Scalar>,
     J: IntoIterator,
-    J::Item: Borrow<Self>,
+    J::Item: Borrow<Self> + Mul<ScalarBytes, Output = ProjectivePoint>,
     Self: Clone,
   {
-    use curve25519_dalek::traits::VartimeMultiscalarMul;
-    <Self as VartimeMultiscalarMul>::vartime_multiscalar_mul(
-      scalars
-        .into_iter()
-        .map(|s| Scalar::decompress_scalar(s.borrow()))
-        .collect::<Vec<ScalarBytes>>(),
-      points,
-    )
+    let acc = Self::identity().to_curve();
+    let result = scalars
+      .into_iter()
+      .zip(points)
+      .fold(acc, |acc, (scalar, point)| {
+        acc + point * Scalar::decompress_scalar(scalar.borrow())
+      });
+
+    result.to_affine()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  #[test]
+  fn msm() {
+    let scalars = vec![Scalar::from(1), Scalar::from(2), Scalar::from(3)];
+    let points = vec![
+      GroupElement::generator(),
+      GroupElement::generator(),
+      GroupElement::generator(),
+    ];
+    let result = GroupElement::vartime_multiscalar_mul(scalars, points);
+
+    assert_eq!(result, GroupElement::generator() * Scalar::from(6));
   }
 }

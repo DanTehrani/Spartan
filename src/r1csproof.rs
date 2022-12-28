@@ -14,6 +14,7 @@ use super::sparse_mlpoly::{SparsePolyEntry, SparsePolynomial};
 use super::sumcheck::ZKSumcheckInstanceProof;
 use super::timer::Timer;
 use super::transcript::{AppendToTranscript, ProofTranscript};
+use crate::group::DecompressEncodedPoint;
 use core::iter;
 use merlin::Transcript;
 use serde::{Deserialize, Serialize};
