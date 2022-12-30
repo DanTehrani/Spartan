@@ -11,6 +11,7 @@ license-file = "LICENSE"
 keywords = ["zkSNARKs", "cryptography", "proofs"]
 
 [dependencies]
+num-bigint-dig = "^0.7"
 k256 = { git = "https://github.com/DanTehrani/elliptic-curves.git", features = ["serde"] }
 merlin = "3.0.0"
 rand = "0.7.3"
