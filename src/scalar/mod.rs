@@ -1,9 +1,9 @@
 use k256::elliptic_curve::{ops::Reduce, PrimeField};
 use k256::U256;
 
-mod ristretto255;
+mod scalar;
 
-pub type Scalar = ristretto255::Scalar;
+pub type Scalar = scalar::Scalar;
 pub type ScalarBytes = k256::Scalar;
 
 pub trait ScalarFromPrimitives {
