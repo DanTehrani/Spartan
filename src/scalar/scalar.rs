@@ -1,9 +1,7 @@
-//! This module provides an implementation of the Curve25519's scalar field $\mathbb{F}_q$
-//! where `q = 2^252 + 27742317777372353535851937790883648493 = 0x1000000000000000 0000000000000000 14def9dea2f79cd6 5812631a5cf5d3ed`
+//! This module provides an implementation of the secp256k1's scalar field $\mathbb{F}_q$
+//! where `q = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141`
 //! This module is an adaptation of code from the bls12-381 crate.
-//! We modify various constants (MODULUS, R, R2, etc.) to appropriate values for Curve25519 and update tests
-//! We borrow the `invert` method from the curve25519-dalek crate.
-//! See NOTICE.md for more details
+//! We modify various constants (MODULUS, R, R2, etc.) to appropriate values for secp256k1 and update tests
 #![allow(clippy::all)]
 use core::borrow::Borrow;
 use core::convert::TryFrom;
@@ -194,7 +192,7 @@ macro_rules! impl_binops_multiplicative {
   };
 }
 
-/// Represents an element of the scalar field $\mathbb{F}_q$ of the Curve25519 elliptic
+/// Represents an element of the scalar field $\mathbb{F}_q$ of the secp256k1 elliptic
 /// curve construction.
 // The internal representation of this type is four 64-bit unsigned
 // integers in little-endian order. `Scalar` values are always in
@@ -721,7 +719,7 @@ impl Scalar {
     let (r5, carry) = mac(r5, k, MODULUS.0[2], carry);
     let (r6, carry) = mac(r6, k, MODULUS.0[3], carry);
     let (r7, carry) = mac(r7, k, MODULUS.0[4], carry);
-    let (r8, carry2) = adc(r8, carry2, carry);
+    let (r8, _) = adc(r8, carry2, carry);
 
     // Result may be within MODULUS of the correct value
     (&Scalar([r4, r5, r6, r7, r8])).sub(&MODULUS)
@@ -760,7 +758,7 @@ impl Scalar {
     let (r5, carry) = mac(r5, self.0[4], rhs.0[1], carry);
     let (r6, carry) = mac(r6, self.0[4], rhs.0[2], carry);
     let (r7, carry) = mac(r7, self.0[4], rhs.0[3], carry);
-    let (r8, r9) = mac(r8, self.0[4], rhs.0[4], carry);
+    let (r8, _) = mac(r8, self.0[4], rhs.0[4], carry);
 
     Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7, r8)
   }
@@ -792,7 +790,7 @@ impl Scalar {
     let (d1, carry) = adc(self.0[1], rhs.0[1], carry);
     let (d2, carry) = adc(self.0[2], rhs.0[2], carry);
     let (d3, carry) = adc(self.0[3], rhs.0[3], carry);
-    let (d4, carry) = adc(self.0[4], rhs.0[4], carry);
+    let (d4, _) = adc(self.0[4], rhs.0[4], carry);
 
     // Attempt to subtract the modulus, to ensure the value
     // is smaller than the modulus.

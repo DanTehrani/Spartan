@@ -1,4 +1,4 @@
-use k256::elliptic_curve::{ops::Reduce, PrimeField};
+use k256::elliptic_curve::ops::Reduce;
 use k256::U256;
 
 mod scalar;

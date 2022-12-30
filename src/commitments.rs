@@ -2,7 +2,7 @@ use super::group::{GroupElement, VartimeMultiscalarMul};
 use super::scalar::Scalar;
 use digest::{ExtendableOutput, Input};
 use k256::elliptic_curve::group::prime::PrimeCurveAffine;
-use k256::{AffinePoint, EncodedPoint};
+use k256::AffinePoint;
 use sha3::Shake256;
 use std::io::Read;
 

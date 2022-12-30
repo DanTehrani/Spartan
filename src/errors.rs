@@ -25,7 +25,7 @@ pub enum R1CSError {
   InvalidNumberOfInputs,
   /// returned if a wrong number of variables in an assignment are supplied
   InvalidNumberOfVars,
-  /// returned if a [u8;32] does not parse into a valid Scalar in the field of ristretto255
+  /// returned if a [u8;32] does not parse into a valid Scalar in the field of secp256k1
   InvalidScalar,
   /// returned if the supplied row or col in (row,col,val) tuple is out of range
   InvalidIndex,
