@@ -8,11 +8,11 @@ use core::convert::TryFrom;
 use core::fmt;
 use core::iter::{Product, Sum};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use hex_literal::hex;
 use num_bigint_dig::{BigUint, ModInverse};
 use rand_core::{CryptoRng, RngCore};
 use serde::de::Visitor;
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
@@ -297,11 +297,11 @@ impl ConditionallySelectable for Scalar {
 }
 
 /// Constant representing the modulus
-/// 0xffffffffffffffff fffffffffffffffe baaedce6af48a03b bfd25e8cd0364141
+/// 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
 const MODULUS: Scalar = Scalar([
-  0xbfd25e8cd0364141,
-  0xbaaedce6af48a03b,
-  0xfffffffffffffffe,
+  0xfffffffefffffc2f,
+  0xffffffffffffffff,
+  0xffffffffffffffff,
   0xffffffffffffffff,
   0,
 ]);
@@ -355,29 +355,32 @@ impl_binops_additive!(Scalar, Scalar);
 impl_binops_multiplicative!(Scalar, Scalar);
 
 /// INV = -(q^{-1} mod 2^64) mod 2^64
-const INV: u64 = 0x4b0dff665588b13f;
+const INV: u64 = 0xd838091dd2253531;
 
 /// R = 2^256 mod q
-/// 0x1 4551231950b75fc4 402da1732fc9bebf
-const R: Scalar = Scalar([0x402da1732fc9bebf, 0x4551231950b75fc4, 0x1, 0x0, 0x0]);
+const R: Scalar = Scalar([
+  0x00000001000003d1,
+  0x0000000000000000,
+  0x0000000000000000,
+  0x0000000000000000,
+  0x0,
+]);
 
 /// R^2 = 2^512 mod q
-/// 0x9d671cd581c69bc5 e697f5e45bcd07c6 741496c20e7cf878 896cf21467d7d140
 const R2: Scalar = Scalar([
-  0x896cf21467d7d140,
-  0x741496c20e7cf878,
-  0xe697f5e45bcd07c6,
-  0x9d671cd581c69bc5,
+  0x000007a2000e90a1,
+  0x0000000000000001,
+  0x0000000000000000,
+  0x0000000000000000,
   0,
 ]);
 
 /// R^3 = 2^768 mod q
-/// 0x555d800c18ef116d b1b31347f1d0b2da 0017648444d4322c 7bc0cfe0e9ff41ed
 const R3: Scalar = Scalar([
-  0x7bc0cfe0e9ff41ed,
-  0x0017648444d4322c,
-  0xb1b31347f1d0b2da,
-  0x555d800c18ef116d,
+  0x002bb1e33795f671,
+  0x0000000100000b73,
+  0x0000000000000000,
+  0x0000000000000000,
   0x0,
 ]);
 
@@ -603,12 +606,9 @@ impl Scalar {
   pub fn invert(&self) -> CtOption<Self> {
     let val = BigUint::from_bytes_le(&self.to_bytes());
 
-    let result = val.mod_inverse(
-      &BigUint::from_str(
-        "115792089237316195423570985008687907852837564279074904382605163141518161494337",
-      )
-      .unwrap(),
-    );
+    let result = val.mod_inverse(&BigUint::from_bytes_be(&hex!(
+      "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"
+    )));
 
     if result.is_some() {
       let mut result = result.unwrap().to_bytes_le().1.to_vec();
@@ -1053,12 +1053,7 @@ mod tests {
   #[test]
   fn test_from_bytes_wide_maximum() {
     assert_eq!(
-      Scalar::from_raw([
-        0xa40611e3449c0f00,
-        0xd00e1ba768859347,
-        0xceec73d217f5be65,
-        0x0399411b7c309a3d
-      ]),
+      Scalar::from_raw([0x000007a2000e90a0, 0x1, 0, 0]),
       Scalar::from_bytes_wide(&[0xff; 64])
     );
   }
@@ -1072,9 +1067,9 @@ mod tests {
   }
 
   const LARGEST: Scalar = Scalar([
-    0xbfd25e8cd0364140,
-    0xbaaedce6af48a03b,
-    0xfffffffffffffffe,
+    0xfffffffefffffc2e,
+    0xffffffffffffffff,
+    0xffffffffffffffff,
     0xffffffffffffffff,
     0,
   ]);
@@ -1085,9 +1080,9 @@ mod tests {
     tmp += &LARGEST;
 
     let target = Scalar([
-      0xbfd25e8cd036413f,
-      0xbaaedce6af48a03b,
-      0xfffffffffffffffe,
+      0xfffffffefffffc2d,
+      0xffffffffffffffff,
+      0xffffffffffffffff,
       0xffffffffffffffff,
       0,
     ]);
@@ -1240,10 +1235,10 @@ mod tests {
   fn test_from_raw() {
     assert_eq!(
       Scalar::from_raw([
-        0xd6ec31748d98951c,
-        0xc6ef5bf4737dcf70,
-        0xfffffffffffffffe,
-        0x0fffffffffffffff
+        0x00000001000003d0,
+        0x0000000000000000,
+        0x0000000000000000,
+        0x0000000000000000,
       ]),
       Scalar::from_raw([0xffffffffffffffff; 4])
     );
