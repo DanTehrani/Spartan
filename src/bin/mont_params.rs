@@ -1,7 +1,7 @@
 use hex_literal::hex;
 use num_bigint_dig::{BigInt, BigUint, ModInverse, ToBigInt};
-use num_traits::{FromPrimitive, Pow, ToPrimitive};
-use std::{ops::Neg, str::FromStr};
+use num_traits::{FromPrimitive, ToPrimitive};
+use std::ops::Neg;
 
 fn get_words(n: &BigUint) -> [u64; 4] {
   let mut words = [0u64; 4];
