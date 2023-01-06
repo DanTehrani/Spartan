@@ -1,7 +1,7 @@
-//! This module provides an implementation of the secp256k1's scalar field $\mathbb{F}_q$
-//! where `q = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141`
+//! This module provides an implementation of the secq256k1's scalar field $\mathbb{F}_q$
+//! where `q = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f`
 //! This module is an adaptation of code from the bls12-381 crate.
-//! We modify various constants (MODULUS, R, R2, etc.) to appropriate values for secp256k1 and update tests
+//! We modify various constants (MODULUS, R, R2, etc.) to appropriate values for secq256k1 and update tests
 #![allow(clippy::all)]
 use core::borrow::Borrow;
 use core::convert::TryFrom;
@@ -192,7 +192,7 @@ macro_rules! impl_binops_multiplicative {
   };
 }
 
-/// Represents an element of the scalar field $\mathbb{F}_q$ of the secp256k1 elliptic
+/// Represents an element of the scalar field $\mathbb{F}_q$ of the secq256k1 elliptic
 /// curve construction.
 // The internal representation of this type is four 64-bit unsigned
 // integers in little-endian order. `Scalar` values are always in

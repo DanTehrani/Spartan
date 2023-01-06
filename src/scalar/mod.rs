@@ -1,10 +1,10 @@
-use k256::elliptic_curve::ops::Reduce;
-use k256::U256;
+use secq256k1::elliptic_curve::ops::Reduce;
+use secq256k1::U256;
 
 mod scalar;
 
 pub type Scalar = scalar::Scalar;
-pub type ScalarBytes = k256::Scalar;
+pub type ScalarBytes = secq256k1::Scalar;
 
 pub trait ScalarFromPrimitives {
   fn to_scalar(self) -> Scalar;

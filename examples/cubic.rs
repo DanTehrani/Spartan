@@ -9,11 +9,11 @@
 //!
 //! [here]: https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649
 #![allow(clippy::assertions_on_result_states)]
-use k256::elliptic_curve::Field;
-use k256::Scalar;
 use libspartan::{InputsAssignment, Instance, SNARKGens, VarsAssignment, SNARK};
 use merlin::Transcript;
 use rand_core::OsRng;
+use secq256k1::elliptic_curve::Field;
+use secq256k1::Scalar;
 
 #[allow(non_snake_case)]
 fn produce_r1cs() -> (

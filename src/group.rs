@@ -1,24 +1,21 @@
-use k256::elliptic_curve::group::prime::PrimeCurveAffine;
-use k256::elliptic_curve::sec1::FromEncodedPoint;
-use k256::{AffinePoint, ProjectivePoint};
+use secq256k1::AffinePoint;
 
 use super::errors::ProofVerifyError;
 use super::scalar::{Scalar, ScalarBytes, ScalarBytesFromScalar};
 use core::borrow::Borrow;
 use core::ops::{Mul, MulAssign};
 
-pub type GroupElement = k256::AffinePoint;
-pub type CompressedGroup = k256::EncodedPoint;
-
+pub type GroupElement = secq256k1::AffinePoint;
+pub type CompressedGroup = secq256k1::EncodedPoint;
 pub trait CompressedGroupExt {
   type Group;
   fn unpack(&self) -> Result<Self::Group, ProofVerifyError>;
 }
 
 impl CompressedGroupExt for CompressedGroup {
-  type Group = k256::AffinePoint;
+  type Group = secq256k1::AffinePoint;
   fn unpack(&self) -> Result<Self::Group, ProofVerifyError> {
-    let result = AffinePoint::from_encoded_point(self);
+    let result = AffinePoint::decompress(*self);
     if result.is_some().into() {
       return Ok(result.unwrap());
     } else {
@@ -41,7 +38,7 @@ impl DecompressEncodedPoint for CompressedGroup {
 
 impl<'b> MulAssign<&'b Scalar> for GroupElement {
   fn mul_assign(&mut self, scalar: &'b Scalar) {
-    let result = (*(self as &GroupElement) * Scalar::decompress_scalar(scalar)).to_affine();
+    let result = (self as &GroupElement) * Scalar::decompress_scalar(scalar);
     *self = result;
   }
 }
@@ -49,7 +46,7 @@ impl<'b> MulAssign<&'b Scalar> for GroupElement {
 impl<'a, 'b> Mul<&'b Scalar> for &'a GroupElement {
   type Output = GroupElement;
   fn mul(self, scalar: &'b Scalar) -> GroupElement {
-    (*self * Scalar::decompress_scalar(scalar)).to_affine()
+    *self * Scalar::decompress_scalar(scalar)
   }
 }
 
@@ -107,7 +104,7 @@ pub trait VartimeMultiscalarMul {
     I: IntoIterator,
     I::Item: Borrow<Self::Scalar>,
     J: IntoIterator,
-    J::Item: Borrow<Self> + Mul<ScalarBytes, Output = ProjectivePoint>,
+    J::Item: Borrow<Self> + Mul<ScalarBytes, Output = AffinePoint>,
     Self: Clone;
 }
 
@@ -118,18 +115,18 @@ impl VartimeMultiscalarMul for GroupElement {
     I: IntoIterator,
     I::Item: Borrow<Self::Scalar>,
     J: IntoIterator,
-    J::Item: Borrow<Self> + Mul<ScalarBytes, Output = ProjectivePoint>,
+    J::Item: Borrow<Self> + Mul<ScalarBytes, Output = AffinePoint>,
     Self: Clone,
   {
-    let acc = Self::identity().to_curve();
+    let acc = Self::identity();
     let result = scalars
       .into_iter()
       .zip(points)
       .fold(acc, |acc, (scalar, point)| {
-        acc + point * Scalar::decompress_scalar(scalar.borrow())
+        acc + (point * Scalar::decompress_scalar(scalar.borrow())).into()
       });
 
-    result.to_affine()
+    result
   }
 }
 
