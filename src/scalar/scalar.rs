@@ -205,7 +205,14 @@ use serde::{Deserializer, Serializer};
 
 impl Serialize for Scalar {
   fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-    let values: Vec<u8> = self.0.iter().map(|v| v.to_le_bytes()).flatten().collect();
+    let values: Vec<u8> = self
+      .0
+      .iter()
+      .enumerate()
+      .filter_map(|(i, v)| if i == 4 { None } else { Some(v.to_le_bytes()) })
+      .flatten()
+      .collect();
+
     let mut seq = serializer.serialize_seq(Some(values.len()))?;
     for val in values.iter() {
       seq.serialize_element(val)?;
