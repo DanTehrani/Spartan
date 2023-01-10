@@ -575,7 +575,7 @@ mod tests {
     // r = [4,3]
     let r = vec![(4_usize).to_scalar(), (3_usize).to_scalar()];
     let eval = poly.evaluate(&r);
-    //    assert_eq!(eval, (28_usize).to_scalar());
+    assert_eq!(eval, (28_usize).to_scalar());
 
     let gens = PolyCommitmentGens::new(poly.get_num_vars(), b"test-two");
     let (poly_commitment, blinds) = poly.commit(&gens, None);
