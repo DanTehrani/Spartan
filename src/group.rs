@@ -1,9 +1,9 @@
-use secq256k1::AffinePoint;
+use secq256k1::{AffinePoint, ProjectivePoint};
 
 use super::errors::ProofVerifyError;
 use super::scalar::{Scalar, ScalarBytes, ScalarBytesFromScalar};
-use core::borrow::Borrow;
 use core::ops::{Mul, MulAssign};
+use multiexp::multiexp;
 
 pub type GroupElement = secq256k1::AffinePoint;
 pub type CompressedGroup = secq256k1::EncodedPoint;
@@ -99,34 +99,24 @@ define_mul_variants!(LHS = Scalar, RHS = GroupElement, Output = GroupElement);
 
 pub trait VartimeMultiscalarMul {
   type Scalar;
-  fn vartime_multiscalar_mul<I, J>(scalars: I, points: J) -> Self
-  where
-    I: IntoIterator,
-    I::Item: Borrow<Self::Scalar>,
-    J: IntoIterator,
-    J::Item: Borrow<Self> + Mul<ScalarBytes, Output = AffinePoint>,
-    Self: Clone;
+  fn vartime_multiscalar_mul(scalars: Vec<Scalar>, points: Vec<GroupElement>) -> Self;
 }
 
 impl VartimeMultiscalarMul for GroupElement {
   type Scalar = super::scalar::Scalar;
-  fn vartime_multiscalar_mul<I, J>(scalars: I, points: J) -> Self
-  where
-    I: IntoIterator,
-    I::Item: Borrow<Self::Scalar>,
-    J: IntoIterator,
-    J::Item: Borrow<Self> + Mul<ScalarBytes, Output = AffinePoint>,
-    Self: Clone,
-  {
-    let acc = Self::identity();
-    let result = scalars
-      .into_iter()
-      .zip(points)
-      .fold(acc, |acc, (scalar, point)| {
-        acc + (point * Scalar::decompress_scalar(scalar.borrow())).into()
-      });
+  // TODO Borrow the arguments so we don't have to clone them, as it was in the original implementation
+  fn vartime_multiscalar_mul(scalars: Vec<Scalar>, points: Vec<GroupElement>) -> Self {
+    let points: Vec<ProjectivePoint> = points.iter().map(|p| ProjectivePoint::from(p.0)).collect();
 
-    result
+    let pairs: Vec<(ScalarBytes, ProjectivePoint)> = scalars
+      .into_iter()
+      .enumerate()
+      .map(|(i, s)| (Scalar::decompress_scalar(&s), points[i]))
+      .collect();
+
+    let result = multiexp::<ProjectivePoint>(pairs.as_slice());
+
+    AffinePoint(result.to_affine())
   }
 }
 

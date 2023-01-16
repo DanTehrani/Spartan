@@ -70,20 +70,23 @@ pub trait Commitments {
 impl Commitments for Scalar {
   fn commit(&self, blind: &Scalar, gens_n: &MultiCommitGens) -> GroupElement {
     assert_eq!(gens_n.n, 1);
-    GroupElement::vartime_multiscalar_mul(&[*self, *blind], &[gens_n.G[0], gens_n.h])
+    GroupElement::vartime_multiscalar_mul(
+      [*self, *blind].to_vec(),
+      [gens_n.G[0], gens_n.h].to_vec(),
+    )
   }
 }
 
 impl Commitments for Vec<Scalar> {
   fn commit(&self, blind: &Scalar, gens_n: &MultiCommitGens) -> GroupElement {
     assert_eq!(gens_n.n, self.len());
-    GroupElement::vartime_multiscalar_mul(self, &gens_n.G) + blind * gens_n.h
+    GroupElement::vartime_multiscalar_mul((*self).clone(), gens_n.G.clone()) + blind * gens_n.h
   }
 }
 
 impl Commitments for [Scalar] {
   fn commit(&self, blind: &Scalar, gens_n: &MultiCommitGens) -> GroupElement {
     assert_eq!(gens_n.n, self.len());
-    GroupElement::vartime_multiscalar_mul(self, &gens_n.G) + blind * gens_n.h
+    GroupElement::vartime_multiscalar_mul(self.to_vec(), gens_n.G.clone()) + blind * gens_n.h
   }
 }

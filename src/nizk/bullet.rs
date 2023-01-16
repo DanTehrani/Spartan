@@ -85,16 +85,30 @@ impl BulletReductionProof {
         a_L
           .iter()
           .chain(iter::once(&c_L))
-          .chain(iter::once(blind_L)),
-        G_R.iter().chain(iter::once(Q)).chain(iter::once(H)),
+          .chain(iter::once(blind_L))
+          .map(|s| *s)
+          .collect(),
+        G_R
+          .iter()
+          .chain(iter::once(Q))
+          .chain(iter::once(H))
+          .map(|s| *s)
+          .collect(),
       );
 
       let R = GroupElement::vartime_multiscalar_mul(
         a_R
           .iter()
           .chain(iter::once(&c_R))
-          .chain(iter::once(blind_R)),
-        G_L.iter().chain(iter::once(Q)).chain(iter::once(H)),
+          .chain(iter::once(blind_R))
+          .map(|s| *s)
+          .collect(),
+        G_L
+          .iter()
+          .chain(iter::once(Q))
+          .chain(iter::once(H))
+          .map(|s| *s)
+          .collect(),
       );
 
       transcript.append_point(b"L", &L.compress());
@@ -106,7 +120,8 @@ impl BulletReductionProof {
       for i in 0..n {
         a_L[i] = a_L[i] * u + u_inv * a_R[i];
         b_L[i] = b_L[i] * u_inv + u * b_R[i];
-        G_L[i] = GroupElement::vartime_multiscalar_mul(&[u_inv, u], &[G_L[i], G_R[i]]);
+        G_L[i] =
+          GroupElement::vartime_multiscalar_mul([u_inv, u].to_vec(), [G_L[i], G_R[i]].to_vec());
       }
 
       blind_fin = blind_fin + blind_L * u * u + blind_R * u_inv * u_inv;
@@ -119,8 +134,10 @@ impl BulletReductionProof {
       G = G_L;
     }
 
-    let Gamma_hat =
-      GroupElement::vartime_multiscalar_mul(&[a[0], a[0] * b[0], blind_fin], &[G[0], *Q, *H]);
+    let Gamma_hat = GroupElement::vartime_multiscalar_mul(
+      [a[0], a[0] * b[0], blind_fin].to_vec(),
+      [G[0], *Q, *H].to_vec(),
+    );
 
     (
       BulletReductionProof { L_vec, R_vec },
@@ -211,15 +228,21 @@ impl BulletReductionProof {
       .map(|p| p.decompress().ok_or(ProofVerifyError::InternalError))
       .collect::<Result<Vec<_>, _>>()?;
 
-    let G_hat = GroupElement::vartime_multiscalar_mul(s.iter(), G.iter());
+    let G_hat = GroupElement::vartime_multiscalar_mul(s.clone(), G.to_vec());
     let a_hat = inner_product(a, &s);
 
     let Gamma_hat = GroupElement::vartime_multiscalar_mul(
       u_sq
         .iter()
         .chain(u_inv_sq.iter())
-        .chain(iter::once(&Scalar::one())),
-      Ls.iter().chain(Rs.iter()).chain(iter::once(Gamma)),
+        .chain(iter::once(&Scalar::one()))
+        .map(|s| *s)
+        .collect(),
+      Ls.iter()
+        .chain(Rs.iter())
+        .chain(iter::once(Gamma))
+        .map(|p| *p)
+        .collect(),
     );
 
     Ok((G_hat, Gamma_hat, a_hat))

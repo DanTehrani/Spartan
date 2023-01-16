@@ -126,11 +126,11 @@ impl ZKSumcheckInstanceProof {
 
         // compute a weighted sum of the RHS
         let comm_target = GroupElement::vartime_multiscalar_mul(
-          w.iter(),
+          w.clone(),
           iter::once(&comm_claim_per_round)
             .chain(iter::once(&comm_eval))
             .map(|pt| pt.decompress().unwrap())
-            .collect::<Vec<GroupElement>>(),
+            .collect(),
         )
         .compress();
 
@@ -510,11 +510,11 @@ impl ZKSumcheckInstanceProof {
         // compute a weighted sum of the RHS
         let target = w[0] * claim_per_round + w[1] * eval;
         let comm_target = GroupElement::vartime_multiscalar_mul(
-          w.iter(),
+          w.clone(),
           iter::once(&comm_claim_per_round)
             .chain(iter::once(&comm_eval))
             .map(|pt| pt.decompress().unwrap())
-            .collect::<Vec<GroupElement>>(),
+            .collect(),
         )
         .compress();
 
@@ -700,7 +700,7 @@ impl ZKSumcheckInstanceProof {
         // compute a weighted sum of the RHS
         let target = w[0] * claim_per_round + w[1] * eval;
         let comm_target = GroupElement::vartime_multiscalar_mul(
-          w.iter(),
+          w.clone(),
           iter::once(&comm_claim_per_round)
             .chain(iter::once(&comm_eval))
             .map(|pt| pt.decompress().unwrap())

@@ -423,14 +423,15 @@ impl R1CSProof {
 
     // r_A * comm_Az_claim + r_B * comm_Bz_claim + r_C * comm_Cz_claim;
     let comm_claim_phase2 = GroupElement::vartime_multiscalar_mul(
-      iter::once(&r_A)
-        .chain(iter::once(&r_B))
-        .chain(iter::once(&r_C)),
+      iter::once(r_A)
+        .chain(iter::once(r_B))
+        .chain(iter::once(r_C))
+        .collect(),
       iter::once(&comm_Az_claim)
         .chain(iter::once(&comm_Bz_claim))
         .chain(iter::once(&comm_Cz_claim))
         .map(|pt| pt.decompress().unwrap())
-        .collect::<Vec<GroupElement>>(),
+        .collect(),
     )
     .compress();
 
@@ -467,10 +468,15 @@ impl R1CSProof {
 
     // compute commitment to eval_Z_at_ry = (Scalar::one() - ry[0]) * self.eval_vars_at_ry + ry[0] * poly_input_eval
     let comm_eval_Z_at_ry = GroupElement::vartime_multiscalar_mul(
-      iter::once(Scalar::one() - ry[0]).chain(iter::once(ry[0])),
-      iter::once(&self.comm_vars_at_ry.decompress().unwrap()).chain(iter::once(
-        &poly_input_eval.commit(&Scalar::zero(), &gens.gens_pc.gens.gens_1),
-      )),
+      iter::once(Scalar::one() - ry[0])
+        .chain(iter::once(ry[0]))
+        .map(|s| s)
+        .collect(),
+      iter::once(self.comm_vars_at_ry.decompress().unwrap())
+        .chain(iter::once(
+          poly_input_eval.commit(&Scalar::zero(), &gens.gens_pc.gens.gens_1),
+        ))
+        .collect(),
     );
 
     // perform the final check in the second sum-check protocol
