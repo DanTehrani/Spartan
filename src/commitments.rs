@@ -24,9 +24,9 @@ impl MultiCommitGens {
     for _ in 0..n + 1 {
       reader.read_exact(&mut uniform_bytes).unwrap();
 
-      // TODO: Need to have uniform distribution?
       let point = AffinePoint::generator();
       let scalar = Scalar::from_bytes(&uniform_bytes).unwrap();
+      // TODO: FIX: Doing this for now since we don't have hash to curve yet.
       gens.push(point * scalar);
     }
 
