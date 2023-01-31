@@ -20,14 +20,10 @@ impl MultiCommitGens {
 
     let mut reader = shake.xof_result();
     let mut gens: Vec<GroupElement> = Vec::new();
-    let mut uniform_bytes = [0u8; 32];
+    let mut uniform_bytes = [0u8; 128];
     for _ in 0..n + 1 {
       reader.read_exact(&mut uniform_bytes).unwrap();
-
-      let point = AffinePoint::generator();
-      let scalar = Scalar::from_bytes(&uniform_bytes).unwrap();
-      // TODO: FIX: Doing this for now since we don't have hash to curve yet.
-      gens.push(point * scalar);
+      gens.push(AffinePoint::from_uniform_bytes(&uniform_bytes));
     }
 
     MultiCommitGens {
