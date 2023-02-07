@@ -55,3 +55,7 @@ harness = false
 [[bench]]
 name = "nizk"
 harness = false
+
+[features]
+multicore = ["rayon"]
+profile = ["colored"]
