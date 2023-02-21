@@ -28,7 +28,6 @@ mod sumcheck;
 mod timer;
 pub mod transcript;
 mod unipoly;
-mod verify_raw;
 
 use core::cmp::max;
 use errors::{ProofVerifyError, R1CSError};
