@@ -1,6 +1,5 @@
 #![allow(non_snake_case)]
 #![doc = include_str!("../README.md")]
-#![deny(missing_docs)]
 #![allow(clippy::assertions_on_result_states)]
 
 extern crate byteorder;
@@ -22,13 +21,14 @@ mod nizk;
 mod product_tree;
 mod r1csinstance;
 mod r1csproof;
-mod random;
-mod scalar;
+pub mod random;
+pub mod scalar;
 mod sparse_mlpoly;
 mod sumcheck;
 mod timer;
-mod transcript;
+pub mod transcript;
 mod unipoly;
+mod verify_raw;
 
 use core::cmp::max;
 use errors::{ProofVerifyError, R1CSError};
@@ -677,7 +677,7 @@ mod tests {
 
     // We will encode the above constraints into three matrices, where
     // the coefficients in the matrix are in the little-endian byte order
-    let mut A: Vec<(usize, usize, [u8; 32])> = Vec::new();
+    let mut A: Vec<(usize, usize, [u8; 32])> = Vec::new(); // <row, column, value>
     let mut B: Vec<(usize, usize, [u8; 32])> = Vec::new();
     let mut C: Vec<(usize, usize, [u8; 32])> = Vec::new();
 
