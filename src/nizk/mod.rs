@@ -292,11 +292,11 @@ impl ProductProof {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DotProductProof {
-  delta: CompressedGroup,
-  beta: CompressedGroup,
-  z: Vec<Scalar>,
-  z_delta: Scalar,
-  z_beta: Scalar,
+  pub delta: CompressedGroup,
+  pub beta: CompressedGroup,
+  pub z: Vec<Scalar>,
+  pub z_delta: Scalar,
+  pub z_beta: Scalar,
 }
 
 impl DotProductProof {

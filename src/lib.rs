@@ -12,19 +12,19 @@ extern crate sha3;
 #[cfg(feature = "multicore")]
 extern crate rayon;
 
-mod commitments;
+pub mod commitments;
 mod dense_mlpoly;
 mod errors;
-mod group;
-mod math;
+pub mod group;
+pub mod math;
 mod nizk;
 mod product_tree;
-mod r1csinstance;
+pub mod r1csinstance;
 mod r1csproof;
 pub mod random;
 pub mod scalar;
 mod sparse_mlpoly;
-mod sumcheck;
+pub mod sumcheck;
 mod timer;
 pub mod transcript;
 mod unipoly;
@@ -55,7 +55,7 @@ pub struct ComputationDecommitment {
 /// `Assignment` holds an assignment of values to either the inputs or variables in an `Instance`
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Assignment {
-  assignment: Vec<Scalar>,
+  pub assignment: Vec<Scalar>,
 }
 
 impl Assignment {
@@ -114,7 +114,7 @@ pub type InputsAssignment = Assignment;
 pub struct Instance {
   /// R1CS instance
   pub inst: R1CSInstance,
-  digest: Vec<u8>,
+  pub digest: Vec<u8>,
 }
 
 impl Instance {
@@ -466,7 +466,7 @@ impl SNARK {
 
 /// `NIZKGens` holds public parameters for producing and verifying proofs with the Spartan NIZK
 pub struct NIZKGens {
-  gens_r1cs_sat: R1CSGens,
+  pub gens_r1cs_sat: R1CSGens,
 }
 
 impl NIZKGens {
@@ -488,8 +488,8 @@ impl NIZKGens {
 /// `NIZK` holds a proof produced by Spartan NIZK
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NIZK {
-  r1cs_sat_proof: R1CSProof,
-  r: (Vec<Scalar>, Vec<Scalar>),
+  pub r1cs_sat_proof: R1CSProof,
+  pub r: (Vec<Scalar>, Vec<Scalar>),
 }
 
 impl NIZK {
