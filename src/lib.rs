@@ -17,7 +17,7 @@ mod dense_mlpoly;
 mod errors;
 pub mod group;
 pub mod math;
-mod nizk;
+pub mod nizk;
 mod product_tree;
 pub mod r1csinstance;
 mod r1csproof;
