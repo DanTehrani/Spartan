@@ -13,7 +13,7 @@ extern crate sha3;
 extern crate rayon;
 
 pub mod commitments;
-mod dense_mlpoly;
+pub mod dense_mlpoly;
 mod errors;
 pub mod group;
 pub mod math;
